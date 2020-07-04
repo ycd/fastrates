@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Free exchange rates API with currency conversion</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" src="min_logo.png" type="image/icon type">
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="shortcut icon" href="{{ url_for('static', path='favicon.png') }}" />
+    <!-- Hightlight.js -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-dark.min.css"
+          integrity="sha256-akwTLZec/XAFvgYgVH1T5/369lhA2Efr22xzCNl1nHs=" crossorigin="anonymous"/>
+    <!-- Google fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+    <!-- Styles -->
+    <link href="{{ url_for('static', path='styles.css') }}" rel="stylesheet">
+</head>
+<body>
+<div id="hero">
+    <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-light pt-5">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a href="https://github.com/ycd/fastrates" class="nav-link">
+                        Source
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <div class="col-8 offset-2">
+            <h1 class="text-center">
+                <img src="../static/logo.png">
+            </h1>
+            <p class="text-center">
+                Fast Rates API is free & open source API service for current and historical foreign exchange rates
+                <br/>
+            </p>
+        </div>
+        <div id="shell" class="col-6 offset-3">
+          <pre>
+            <code class="http px-5">
+GET https://fastrates.herokuapp.com/latest HTTP/1.1
+
+{
+  "base": "EUR",
+  "date": "2020-04-06",
+  "rates": {
+    "CAD": 1.5343,
+    "TRY": 7.7368,
+    "GBP": 0.87295,
+    "SEK": 10.2983,
+    "USD": 1.1286,
+    "INR": 84.354,
+    "RUB": 79.4434,
+    ...
+  }
+}
+            </code>
+          </pre>
+        </div>
+    </div>
+</div>
+
+<div id="features">
+    <div class="container">
+        <div class="row">
+            <div class="col-10 offset-1 my-5">
+                <div class="row">
+                    <div class="col-3 offset-2">
+
+                        <h2><strong>Fast & reliable</strong> </h2>
+                        <p> Fast Rates API has been designed and tested to handle +2000 of request per second. </p></div>
+
+                    <div class="col-3 offset-2">
+                        <h2><strong>Open Source</strong>
+                    </h2>
+                        <p> Everything from the code base is opensource and free to
+                            use under a permissive MIT license. </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-6 offset-3 my-5">
+            <h4>Usage</h4>
+
+            <p>
+                Get the latest foreign exchange reference rates.
+            </p>
+            <pre>
+            <code class="http px-5 rounded-corners">
+GET https://fastrates.herokuapp.com/latest HTTP/1.1
+            </code>
+          </pre>
+
+            <p>
+                Get historical rates for any day since 2010
+            </p>
+            <pre>
+            <code class="http px-5 rounded-corners">
+GET https://fastrates.herokuapp.com/historical?date=2010-01-12 HTTP/1.1
+            </code>
+          </pre>
+
+            <p>
+                Rates are quoted against the Euro by default.
+                Quote against a different currency by setting the base parameter in your request.
+            </p>
+            <pre>
+            <code class="http px-5 rounded-corners">
+GET http://fastrates.herokuapp.com/latest?base=USD HTTP/1.1
+            </code>
+          </pre>
+           <p>
+                Request specific exchange rates by setting the symbols parameter.
+            </p>
+            <pre>
+            <code class="http px-5 rounded-corners">
+GET https://fastrates.herokuapp.com/latest?symbols=USD,GBP HTTP/1.1
+            </code>
+          </pre>
+          </pre>
+            <p>
+                Get historical rates for a time period.
+            </p>
+            <pre>
+            <code class="http px-5 rounded-corners">
+GET https://fastrates.herokuapp.com/historical?start_at=2010-01-01&end_at=2020-09-01 HTTP/1.1
+            </code>
+          </pre>
+           <p>
+                Quote the historical rates against a different currency.
+            </p>
+            <pre>
+            <code class="http px-5 rounded-corners">
+GET https://fastrates.herokuapp.com/historical?start_at=2018-01-01&end_at=2018-09-01&base=USD HTTP/1.1
+            </code>
+          </pre>
+            <p>
+              Fast Rates is a such a new service it's not supporting all tickers and dates earlier than 2010 yet, but version we are plannig to do that in version 1.5.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div id="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col my-3 text-center">
+                <ul class="list-unstyled mx-auto">
+                    <li>
+                        <a class="github-button" href="https://github.com/ycd/fastrates" data-size="large"
+                           data-show-count="true" aria-label="Star ycd/fastrates on GitHub">Star</a>
+                        <a class="github-button" href="https://github.com/ycd/fastrates/fork"
+                           data-icon="octicon-repo-forked" data-size="large" data-show-count="true"
+                           aria-label="Fork ycd/fastrates on GitHub">Fork</a>
+                    </li>
+                    <li>
+                        Made with <span style="color: #e25555;">&hearts;</span> for coding by <a
+                            href="https://github.com/ycd">Yagizcan Degirmenci</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Highlight.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"
+        integrity="sha256-/BfiIkHlHoVihZdc6TFuj7MmJ0TWcWsMXkeDFwhi0zw=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/http.min.js"
+        integrity="sha256-ze9TA1yfIP6jEh7+8fVq8CxHsydquQNe9O+P05ueO3w=" crossorigin="anonymous"></script>
+<script>
+    hljs.initHighlightingOnLoad();
+</script>
+
+<!-- Github buttons -->
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+</body>
+</html>

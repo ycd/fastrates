@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sqlalchemy
+fastapi-utils
+jinja2
+requests
+aiofiles
+psycopg2-binary
+pytest
