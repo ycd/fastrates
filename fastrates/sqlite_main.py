@@ -172,7 +172,7 @@ async def historical(base: Optional[str] = None, start_at: Optional[str] = None,
     result = {}
     for idx, i in enumerate(currency):
         dates = currency[idx][1]
-        rates = currency[idx][0]
+        rates = json.loads(currency[idx][0])
         result.update({dates: rates})
     if result == {}:
         raise HTTPException(status_code=404, detail="Invalid currency or invalid date")
@@ -220,7 +220,7 @@ async def latest(base: Optional[str] = None, symbols: Optional[str] = None):
         currency = cursor.fetchall()
         result = {}
         for i in currency:
-            for k, v in i[0].items():
+            for k, v in json.loads(i[0]).items():
                 if k in cur_symbols:
                     result.update({k: v})
 
@@ -237,7 +237,7 @@ async def latest(base: Optional[str] = None, symbols: Optional[str] = None):
     result = {}
     for idx, i in enumerate(currency):
         dates = currency[idx][1]
-        rates = currency[idx][0]
+        rates = json.loads(currency[idx][0])
         result.update({dates: rates})
 
     if result.values() == {}:
