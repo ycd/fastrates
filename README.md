@@ -19,7 +19,7 @@ cd fastrates
 virtualenv env
 source env/bin/activate
 pip install -r requirements.txt
-uvicorn local_main:app --reload
+uvicorn sqlite_main:app --reload
 ```
 
 
