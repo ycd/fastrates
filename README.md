@@ -1,4 +1,4 @@
-<img src="https://lh3.googleusercontent.com/l2fY_lURi_e8DZDBTiQDthVbg2uEtbMrFZkh7h1mk2QGHoE4oU2yNcgGbOwX05nQYzJSplD5zdVc9Te1YZWm1j6Fi6DeHkjEzznFPBh-vheedQ7fuUeCOJbzFZXqnnMoMxFbFs8-Bs8DUFCtdAT7xkgUHU6t_VLMliM1dR-TZzYWQKOOvS_c6Yo7AycUcsgHa6SOpEJRd7udLcW4zzFJc5kLbUf43MB1SjUY-fagPfeyoFZOcVsQUepTngDimJBHxSBZmJa6iCWD6-80SDvWf8lljDo9QaeYZ_6ma5ABX0afnG9OUPSlCFZ2hvqoUJVqB_D-uRBrKCfwYXu2V10_QSYNT-Lf1y7yTM2ZaoowKZnZnieTaLMQ-5BxBxg1H0w3N1N1v1kYRDfq8L_6QHwDWLXtNOuKnIdYOQNSSRbV3zG-Vyl3pBhmg1QVy76HKNRDL9LWsmkWhoAJgXFTblOIftHdBSeYr__y1bK8csjR8lpABSNeb4BIpeOftkh4OJHuqjdiFuuOwePHjEZDvuKTPyXEs53CKnopJ-ktOJIhGniGc887B7Jlp97atpeGr1mYCGt8H5icznCjZymMLTHoz9K8F5EdRONfAtzvZDuCHrG1Er0qonyz0C1zC2Tni8gwapt4V59wEc7oXL95Jf6RK0_l2CKTrez8Yc-QWU4mvBbGp-fCwq574pMfue1Q=w500-h167-no?authuser=0" width=500>
+<img src="https://github.com/ycd/fastrates/blob/master/fastrates/frontend/static/logo.png" width=500>
 
 ![](https://img.shields.io/github/forks/ycd/fastrates?style=for-the-badge)
 ![](https://img.shields.io/github/stars/ycd/fastrates?style=for-the-badge)
