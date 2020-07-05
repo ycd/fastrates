@@ -42,8 +42,29 @@ class Currency(Base):
 
 Base.metadata.create_all(bind=engine)
 
+
+tags_metadata = [
+        {
+            "name": "Latest",
+            "description": "Get the latest rates."
+        },
+        {
+            "name": "Historical",
+            "description": "Get historical rates"
+        },
+        {   "name": "Homepage",
+            "description": "",
+        }
+]
+
+
 # FastAPI
-app = FastAPI()
+app = FastAPI(
+    title="Fast Rates API",
+    description="Free API service for currency rates",
+    version="0.1.0",
+    openapi_tags=tags_metadata,
+)
 
 # For static files
 templates = Jinja2Templates(directory="fastrates/frontend/templates")
@@ -53,10 +74,11 @@ app.mount("/static", StaticFiles(directory="fastrates/frontend/static"), name="s
 
 
 # Tickers for updating database
-tickers = ['USD', "EUR"]
-# , 'PHP', 'DKK', 'HUF', 'CZK', 'AUD', 'RON', 'SEK', 'IDR',
-#            'INR', 'BRL', 'RUB', 'HRK', 'JPY', 'THB', 'CHF', 'SGD', 'PLN', 'BGN', 'TRY',
-#            'CNY', 'NOK', 'NZD', 'ZAR', 'USD', 'MXN', 'ILS', 'GBP', 'KRW', 'MYR', 'CAD'
+tickers = ['USD', "EUR", "RUB", "CAD", 'PHP', 'DKK', 'HUF', 'CZK', 'AUD', 'RON', 'SEK', 'IDR',
+           'INR', 'BRL', 'RUB', 'HRK', 'JPY', 'THB', 'CHF', 'SGD', 'PLN', 'BGN', 'TRY',
+           'CNY', 'NOK', 'NZD', 'ZAR', 'MXN', 'ILS', 'GBP', 'KRW', 'MYR', 'CAD']
+
+
 
 # Updates database
 async def update_db(tick, preference):
@@ -100,7 +122,7 @@ async def update_db(tick, preference):
             pass
 
 
-# @app.on_event("startup")
+@app.on_event("startup")
 async def initial_updater():
     """
     Updates whole database for once
@@ -109,17 +131,17 @@ async def initial_updater():
         await update_db(tick, "initial")
 
 
-# @app.on_event("startup")
-@repeat_every(seconds=60 * 60 * 12)
+
+@repeat_every(seconds=60 * 60 * 4)
 async def daily_updater():
     """
-    Updates database in every 12 hour
+    Updates database in every 4 hour
     """
     for tick in tickers:
         await update_db(tick, "daily")
 
 
-@app.get("/historical")
+@app.get("/historical", tags=["Historical"])
 async def historical(base: Optional[str] = None, start_at: Optional[str] = None,
                      end_at: Optional[str] = None, symbols: Optional[str] = None, date: Optional[str] = None):
 
@@ -127,37 +149,75 @@ async def historical(base: Optional[str] = None, start_at: Optional[str] = None,
     if not base:
         base = "EUR"
 
+
+    if date:
+        try:
+            currency = cursor.execute(f"""
+            SELECT rates,date,ticker
+            FROM currency
+            WHERE ticker = %s
+            AND date = %s """, (base, date,))
+        except:
+            raise HTTPException(status_code=404, detail="Invalid currency or invalid date")
+
+
+    elif end_at and start_at and symbols:
+        try:
+            cur_symbols = symbols.split(",")
+            currency = cursor.execute(f"""
+            SELECT rates,date,ticker
+            FROM currency
+            WHERE ticker = (%s)
+            AND date BETWEEN SYMMETRIC %s AND %s """, (base, start_at, end_at,))
+            currency = cursor.fetchall()
+            result = {}
+            for i in currency:
+                temp = {}
+                for k,v in i[0].items():
+                    print(i[1],{k:v})
+                    if str(k) in cur_symbols:
+                        temp.update({k:v})
+                result.update({i[1]:temp})
+                temp = {}
+            if result == {}:
+                raise HTTPException(status_code=404, detail="Invalid currency or invalid date")
+            else:
+                return {"rates": result, "base": base}
+        except:
+            raise HTTPException(status_code=404, detail="Invalid currency or invalid date")
+
     # End at & Start at
-    if end_at and start_at:
-        currency = cursor.execute("""
-        SELECT rates,date,ticker
-        FROM currency
-        WHERE ticker = %s
-        AND date BETWEEN SYMMETRIC %s AND %s """, (base, start_at, end_at, ))
+    elif end_at and start_at:
+        try:
+            currency = cursor.execute("""
+            SELECT rates,date,ticker
+            FROM currency
+            WHERE ticker = (%s)
+            AND date BETWEEN SYMMETRIC %s AND %s """, (base, start_at, end_at, ))
+        except:
+            raise HTTPException(status_code=404, detail="Invalid currency or invalid date")
 
     # Start at
-    if start_at:
-        currency = cursor.execute(f"""
-        SELECT rates,date,ticker
-        FROM currency
-        WHERE ticker = %s
-        AND date > %s """,(base, start_at,))
+    elif start_at:
+        try:
+            currency = cursor.execute(f"""
+            SELECT rates,date,ticker
+            FROM currency
+            WHERE ticker = (%s)
+            AND date > %s """,(base, start_at,))
+        except:
+            raise HTTPException(status_code=404, detail="Invalid currency or invalid date")
 
     # End at
-    if end_at:
-        currency = cursor.execute(f"""
-        SELECT rates,date,ticker
-        FROM currency
-        WHERE ticker = %s
-        AND date < %s """, (base, end_at,))
-
-    # Date
-    if date:
-        currency = cursor.execute(f"""
-        SELECT rates,date,ticker
-        FROM currency
-        WHERE ticker = %s
-        AND date = %s """, (base, date,))
+    elif end_at:
+        try:
+            currency = cursor.execute(f"""
+            SELECT rates,date,ticker
+            FROM currency
+            WHERE ticker = (%s)
+            AND date < %s """, (base, end_at,))
+        except:
+            raise HTTPException(status_code=404, detail="Invalid currency or invalid date")
 
 
     """Fetchs data from database"""
@@ -172,29 +232,10 @@ async def historical(base: Optional[str] = None, start_at: Optional[str] = None,
     else:
         return {"rates": result, "base": base}
 
-    # TODO adding symbols to the historical
-    # if end_at and start_at and symbols:
-    #     cur_symbols = symbols.split(",")
-    #     currency = cursor.execute(f"""
-    #     SELECT rates,date,ticker
-    #     FROM currency
-    #     WHERE ticker = %s
-    #     AND date > %s
-    #     AND date < %s """, (base, start_at, end_at))
-    #
-    #     currency = cursor.fetchall()
-    #     result = {}
-    #     print(currency)
-    #     for i in currency:
-    #         print(i)
-    #         for k,v in i[0].items():
-    #             if k in cur_symbols:
-    #                 result.update({k:v})
-    #     return {"rates": result, "base": base}
 
 
 # Latest
-@app.get("/latest")
+@app.get("/latest", tags=["Latest"])
 async def latest(base: Optional[str] = None, symbols: Optional[str] = None):
 
     # Default base is EUR
@@ -240,6 +281,6 @@ async def latest(base: Optional[str] = None, symbols: Optional[str] = None):
 
 
 # Homepage
-@app.get("/")
+@app.get("/", tags=["Homepage"])
 async def home(request: Request):
     return templates.TemplateResponse("main.html", {"request": request})
