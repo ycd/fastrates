@@ -19,6 +19,10 @@ from sqlalchemy.orm import sessionmaker
 # SQLALCHEMY_DATABASE_URL = "sqlite:///sql_app.db"
 SQLALCHEMY_DATABASE_URL = os.environ.get('DATABASE_URL')
 
+SQLALCHEMY_DATABASE_URL = "postgresql://username:password@localhost:5432/databasename"
+
+# SQLALCHEMY_DATABASE_URL = os.environ.get('DATABASE_URL')
+
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=True, autoflush=False, bind=engine)
@@ -146,10 +150,10 @@ async def historical(base: Optional[str] = None, start_at: Optional[str] = None,
                      end_at: Optional[str] = None, symbols: Optional[str] = None, date: Optional[str] = None):
 
 
-    if not base:
+    if not base or base not in tickers:
         base = "EUR"
 
-
+    # Date
     if date:
         try:
             currency = cursor.execute(f"""
@@ -158,12 +162,17 @@ async def historical(base: Optional[str] = None, start_at: Optional[str] = None,
             WHERE ticker = %s
             AND date = %s """, (base, date,))
         except:
+            cursor.execute("rollback")
             raise HTTPException(status_code=404, detail="Invalid currency or invalid date")
 
 
     elif end_at and start_at and symbols:
         try:
             cur_symbols = symbols.split(",")
+            if len(cur_symbols) != 2:
+                return {"MissTypo": "Please enter the symbols in this format 'USD,GBP' or 'TRY,RUB' "}
+
+            # Database query
             currency = cursor.execute(f"""
             SELECT rates,date,ticker
             FROM currency
@@ -174,7 +183,6 @@ async def historical(base: Optional[str] = None, start_at: Optional[str] = None,
             for i in currency:
                 temp = {}
                 for k,v in i[0].items():
-                    print(i[1],{k:v})
                     if str(k) in cur_symbols:
                         temp.update({k:v})
                 result.update({i[1]:temp})
@@ -184,6 +192,7 @@ async def historical(base: Optional[str] = None, start_at: Optional[str] = None,
             else:
                 return {"rates": result, "base": base}
         except:
+            cursor.execute("rollback")
             raise HTTPException(status_code=404, detail="Invalid currency or invalid date")
 
     # End at & Start at
@@ -195,6 +204,7 @@ async def historical(base: Optional[str] = None, start_at: Optional[str] = None,
             WHERE ticker = (%s)
             AND date BETWEEN SYMMETRIC %s AND %s """, (base, start_at, end_at, ))
         except:
+            cursor.execute("rollback")
             raise HTTPException(status_code=404, detail="Invalid currency or invalid date")
 
     # Start at
@@ -206,6 +216,7 @@ async def historical(base: Optional[str] = None, start_at: Optional[str] = None,
             WHERE ticker = (%s)
             AND date > %s """,(base, start_at,))
         except:
+            cursor.execute("rollback")
             raise HTTPException(status_code=404, detail="Invalid currency or invalid date")
 
     # End at
@@ -217,20 +228,25 @@ async def historical(base: Optional[str] = None, start_at: Optional[str] = None,
             WHERE ticker = (%s)
             AND date < %s """, (base, end_at,))
         except:
+            cursor.execute("rollback")
             raise HTTPException(status_code=404, detail="Invalid currency or invalid date")
 
 
     """Fetchs data from database"""
-    currency = cursor.fetchall()
-    result = {}
-    for idx, i in enumerate(currency):
-        dates = currency[idx][1]
-        rates = currency[idx][0]
-        result.update({dates: rates})
-    if result == {}:
-        raise HTTPException(status_code=404, detail="Invalid currency or invalid date")
-    else:
-        return {"rates": result, "base": base}
+    try:
+        currency = cursor.fetchall()
+        result = {}
+        for idx, i in enumerate(currency):
+            dates = currency[idx][1]
+            rates = currency[idx][0]
+            result.update({dates: rates})
+        if result == {}:
+            raise HTTPException(status_code=404, detail="Invalid currency or invalid date")
+        else:
+            return {"rates": result, "base": base}
+    except:
+        cursor.execute("rollback")
+
 
 
 
@@ -244,27 +260,36 @@ async def latest(base: Optional[str] = None, symbols: Optional[str] = None):
 
     # Symbols
     if symbols:
-        cur_symbols = symbols.split(",")
-        currency = cursor.execute(f"""
-        SELECT rates,date,ticker
-        FROM currency
-        WHERE ticker = (%s)
-        ORDER BY date DESC LIMIT 1;""", (base,))
+        try:
+            cur_symbols = symbols.split(",")
+            if len(cur_symbols) != 2 and len(symbols) != 7:
+                return {"MissTypo": "Please enter the symbols in the following format 'USD,GBP' or 'TRY,RUB'"}
 
-        currency = cursor.fetchall()
-        result = {}
-        for i in currency:
-            for k, v in i[0].items():
-                if k in cur_symbols:
-                    result.update({k: v})
+            #Database Query
+            currency = cursor.execute(f"""
+            SELECT rates,date,ticker
+            FROM currency
+            WHERE ticker = (%s)
+            ORDER BY date DESC LIMIT 1;""", (base,))
 
-        return {"rates": result, "base": base}
+
+            currency = cursor.fetchall()
+            result = {}
+            for i in currency:
+                for k, v in i[0].items():
+                    if k in cur_symbols:
+                        result.update({k: v})
+
+            return {"rates": result, "base": base}
+        except:
+            cursor.execute("rollback")
+            return {HTTPException(status_code=404), {"Error": "Somekind of mistypo?"}}
 
     currency = cursor.execute(f"""
     SELECT rates,date,ticker
     FROM currency
     WHERE ticker = (%s)
-    ORDER BY date DESC LIMIT 1;""", (base,))
+    ORDER BY date DESC LIMIT 1""", (base,))
 
     """Fetchs data from database"""
     currency = cursor.fetchall()
@@ -277,6 +302,7 @@ async def latest(base: Optional[str] = None, symbols: Optional[str] = None):
     if result.values() == {}:
         raise HTTPException(status_code=404, detail="Invalid currency or invalid date")
     else:
+        cursor.execute("rollback")
         return {"rates": result, "base": base}
 
 
