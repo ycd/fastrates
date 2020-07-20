@@ -156,15 +156,22 @@ async def historical(base: Optional[str] = None, start_at: Optional[str] = None,
     # Date
     if date:
         try:
-            currency = cursor.execute(f"""
+            currency = cursor.execute(
+                f"""
             SELECT rates,date,ticker
             FROM currency
             WHERE ticker = %s
-            AND date = %s """, (base, date,))
+            AND date = %s
+            OR date < %s
+            ORDER BY date DESC
+            LIMIT 1""",
+                (base, date, date,),
+            )
         except:
             cursor.execute("rollback")
-            raise HTTPException(status_code=404, detail="Invalid currency or invalid date")
-
+            raise HTTPException(
+                status_code=404, detail="Invalid currency or invalid date"
+            )
 
     elif end_at and start_at and symbols:
         try:
