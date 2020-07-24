@@ -126,7 +126,7 @@ async def update_db(tick, preference):
             pass
 
 
-@app.on_event("startup")
+# @app.on_event("startup")
 async def initial_updater():
     """
     Updates whole database for once
